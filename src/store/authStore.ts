@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { 
-  User, 
+import {
+  User,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  signInWithRedirect
+  signInWithRedirect,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
 
@@ -27,13 +27,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   // 사용자 설정 함수
   setUser: (user) => set({ currentUser: user }),
-  
+
   // 로딩 상태 설정 함수
   setLoading: (loading) => set({ loading }),
-  
+
   // 초기화 상태 설정 함수
   setInitialized: (initialized) => set({ initialized }),
-  
+
   // 구글 로그인 함수
   signInWithGoogle: async () => {
     try {
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ loading: false });
     }
   },
-  
+
   // 로그아웃 함수
   signOut: async () => {
     try {
@@ -56,19 +56,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     } finally {
       set({ loading: false });
     }
-  }
+  },
 }));
 
 // Firebase 인증 상태 변경 감지 초기화 함수
 export const initializeAuthListener = () => {
   const { setUser, setLoading, setInitialized } = useAuthStore.getState();
-  
+
   // 인증 상태 변경 감지
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
+  return onAuthStateChanged(auth, (user) => {
     setUser(user);
     setLoading(false);
     setInitialized(true);
   });
-  
-  return unsubscribe;
-}; 
+};

@@ -12,31 +12,31 @@ function App() {
   // 컴포넌트 마운트 시 인증 리스너 초기화
   useEffect(() => {
     const unsubscribe = initializeAuthListener();
-    
+
     // 컴포넌트 언마운트 시 구독 해제
     return () => unsubscribe();
   }, []);
 
   return (
     <Router>
-      <div className="app">
+      <div className='app'>
         <Navbar />
-        <main className="main-content">
+        <main className='main-content'>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route 
-              path="/profile" 
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<Login />} />
+            <Route
+              path='/profile'
               element={
                 <ProtectedRoute>
                   <Profile />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route path="*" element={<NotFound />} />
+            <Route path='*' element={<NotFound />} />
           </Routes>
         </main>
-        <footer className="footer">
+        <footer className='footer'>
           <p>Firebase 인증 테스트 앱 &copy; {new Date().getFullYear()}</p>
         </footer>
       </div>
