@@ -6,7 +6,7 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 // 실제 프로젝트에서는 환경 변수를 사용하는 것이 좋습니다
 const firebaseConfig = {
   apiKey: 'AIzaSyClteaEGIK0uMAuO3Eenolg5SZO6NuAvio',
-  authDomain: 'auth-test-1e84a.firebaseapp.com',
+  authDomain: 'auth-test-swart-six.vercel.app',
   projectId: 'auth-test-1e84a',
   storageBucket: 'auth-test-1e84a.firebasestorage.app',
   messagingSenderId: '422648395130',
