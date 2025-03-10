@@ -2,22 +2,30 @@ import { create } from 'zustand';
 import {
   User,
   signOut as firebaseSignOut,
+  getRedirectResult,
   onAuthStateChanged,
+  signInWithPopup,
   signInWithRedirect,
+  updateEmail,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
+import { useEffect } from 'react';
 
 // 인증 스토어 상태 타입 정의
 interface AuthState {
   currentUser: User | null;
   loading: boolean;
   initialized: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (
+    provider: 'google' | 'apple' | 'facebook',
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setInitialized: (initialized: boolean) => void;
 }
+
+const env = import.meta.env.MODE;
 
 // Zustand 스토어 생성
 export const useAuthStore = create<AuthState>((set) => ({
@@ -35,10 +43,40 @@ export const useAuthStore = create<AuthState>((set) => ({
   setInitialized: (initialized) => set({ initialized }),
 
   // 구글 로그인 함수
-  signInWithGoogle: async () => {
+  signInWithGoogle: async (provider) => {
     try {
       set({ loading: true });
-      await signInWithRedirect(auth, googleProvider);
+      const providers = {
+        google: googleProvider,
+        apple: googleProvider,
+        facebook: googleProvider,
+      };
+      if (env === 'development') {
+        const { user } = await signInWithPopup(auth, providers[provider]);
+        if (user) {
+          if (user) {
+            const providerData = user.providerData[0];
+            // providerData에서 이메일을 가져와 사용자 이메일 업데이트
+            if (providerData && providerData.email && !user.email) {
+              try {
+                updateEmail(user, providerData.email);
+                console.log('Email updated successfully');
+              } catch (updateError) {
+                console.error('Error updating email:', updateError);
+              }
+            }
+          }
+        }
+      } else {
+        await signInWithRedirect(auth, providers[provider]);
+        const user = await getRedirectResult(auth);
+        if (user?.user) {
+          const providerData = user.user.providerData[0];
+          if (providerData && providerData.email && !user.user.email) {
+            await updateEmail(user.user, providerData.email);
+          }
+        }
+      }
     } catch (error) {
       console.error('Google 로그인 에러:', error);
     } finally {
@@ -60,13 +98,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 // Firebase 인증 상태 변경 감지 초기화 함수
-export const initializeAuthListener = () => {
+export const useInitializeAuthListener = () => {
   const { setUser, setLoading, setInitialized } = useAuthStore.getState();
 
-  // 인증 상태 변경 감지
-  return onAuthStateChanged(auth, (user) => {
-    setUser(user);
-    setLoading(false);
-    setInitialized(true);
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+      setInitialized(true);
+    });
+    return () => unsubscribe();
+  }, []);
 };

@@ -5,10 +5,12 @@ import react from '@vitejs/plugin-react-swc';
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: 3000,
     proxy: {
-      '/__/auth': {
+      '/__/auth/': {
         target: 'https://auth-test-1e84a.firebaseapp.com',
         changeOrigin: true,
+        secure: false,
       },
     },
   },
