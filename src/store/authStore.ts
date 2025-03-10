@@ -5,7 +5,6 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   signInWithRedirect,
-  updateEmail,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
 import { useEffect } from 'react';
@@ -51,16 +50,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         facebook: googleProvider,
       };
       if (env === 'development') {
-        const { user } = await signInWithPopup(auth, providers[provider]);
-        if (user) {
-          if (user) {
-            const providerData = user.providerData[0];
-            // providerData에서 이메일을 가져와 사용자 이메일 업데이트
-            if (providerData && providerData.email && !user.email) {
-              await updateEmail(user, providerData.email);
-            }
-          }
-        }
+        await signInWithPopup(auth, providers[provider]);
+        // if (user) {
+        //   if (user) {
+        //     const providerData = user.providerData[0];
+        //     // providerData에서 이메일을 가져와 사용자 이메일 업데이트
+        //     if (providerData && providerData.email && !user.email) {
+        //       await updateEmail(user, providerData.email);
+        //     }
+        //   }
+        // }
       } else {
         await signInWithRedirect(auth, providers[provider]);
         // const user = await getRedirectResult(auth);
@@ -103,6 +102,7 @@ export const useInitializeAuthListener = () => {
       setUser(user);
       setLoading(false);
       setInitialized(true);
+      console.log('user', user);
     });
     return () => unsubscribe();
   }, []);
