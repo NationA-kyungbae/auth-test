@@ -1,22 +1,21 @@
-import { create } from 'zustand';
+import { useEffect } from 'react';
 import {
   User,
   signOut as firebaseSignOut,
+  getRedirectResult,
   onAuthStateChanged,
   signInWithPopup,
   signInWithRedirect,
+  updateEmail,
 } from 'firebase/auth';
-import { auth, googleProvider } from '../services/firebase';
-import { useEffect } from 'react';
+import { create } from 'zustand';
+import { auth, providers, FBProviders } from '../services/firebase';
 
-// 인증 스토어 상태 타입 정의
 interface AuthState {
-  currentUser: User | null;
+  authUser: User | null;
   loading: boolean;
   initialized: boolean;
-  signInWithGoogle: (
-    provider: 'google' | 'apple' | 'facebook',
-  ) => Promise<void>;
+  signInWithGoogle: (provider: FBProviders) => Promise<void>;
   signOut: () => Promise<void>;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
@@ -25,14 +24,13 @@ interface AuthState {
 
 const env = import.meta.env.MODE;
 
-// Zustand 스토어 생성
-export const useAuthStore = create<AuthState>((set) => ({
-  currentUser: null,
+export const useFirebaseAuthStore = create<AuthState>((set) => ({
+  authUser: null,
   loading: true,
   initialized: false,
 
   // 사용자 설정 함수
-  setUser: (user) => set({ currentUser: user }),
+  setUser: (user) => set({ authUser: user }),
 
   // 로딩 상태 설정 함수
   setLoading: (loading) => set({ loading }),
@@ -44,35 +42,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   signInWithGoogle: async (provider) => {
     try {
       set({ loading: true });
-      const providers = {
-        google: googleProvider,
-        apple: googleProvider,
-        facebook: googleProvider,
-      };
+
       if (env === 'development') {
-        await signInWithPopup(auth, providers[provider]);
-        // if (user) {
-        //   if (user) {
-        //     const providerData = user.providerData[0];
-        //     // providerData에서 이메일을 가져와 사용자 이메일 업데이트
-        //     if (providerData && providerData.email && !user.email) {
-        //       await updateEmail(user, providerData.email);
-        //     }
-        //   }
-        // }
+        const { user } = await signInWithPopup(auth, providers[provider]);
+        if (!user) return;
+        set({ authUser: user });
+        const providerData = user.providerData[0];
+        if (providerData && providerData.email && !user.email) {
+          await updateEmail(user, providerData.email);
+        }
       } else {
         await signInWithRedirect(auth, providers[provider]);
-        // const user = await getRedirectResult(auth);
-        // if (user?.user) {
-        //   const providerData = user.user.providerData[0];
-        //   if (providerData && providerData.email && !user.user.email) {
-        //     console.log('providerData', providerData);
-        //     await updateEmail(user.user, providerData.email);
-        //   }
-        // }
       }
-
-      console.log({ env: env, status: 'success' });
     } catch (error) {
       console.error('Google 로그인 에러:', error);
     } finally {
@@ -91,11 +72,23 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ loading: false });
     }
   },
+
+  // 리다이렉트 결과 가져오기
+  getRedirectResult: async () => {
+    const user = await getRedirectResult(auth);
+    if (!user?.user) return;
+    const providerData = user.user.providerData[0];
+    if (providerData && providerData.email && !user.user.email) {
+      await updateEmail(user.user, providerData.email);
+    }
+    set({ authUser: user.user });
+  },
 }));
 
 // Firebase 인증 상태 변경 감지 초기화 함수
 export const useInitializeAuthListener = () => {
-  const { setUser, setLoading, setInitialized } = useAuthStore.getState();
+  const { setUser, setLoading, setInitialized } =
+    useFirebaseAuthStore.getState();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -107,3 +100,5 @@ export const useInitializeAuthListener = () => {
     return () => unsubscribe();
   }, []);
 };
+
+export default useFirebaseAuthStore;

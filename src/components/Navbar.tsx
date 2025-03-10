@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useFirebaseAuthStore } from '../store/useFirebaseAuthStore';
 
 const Navbar = () => {
-  const { currentUser, signOut } = useAuthStore();
+  const { authUser, signOut } = useFirebaseAuthStore();
 
   return (
     <nav className='navbar'>
@@ -14,7 +14,7 @@ const Navbar = () => {
           홈
         </Link>
 
-        {currentUser ? (
+        {authUser ? (
           <>
             <Link to='/profile' className='navbar-item'>
               프로필
@@ -23,14 +23,14 @@ const Navbar = () => {
               로그아웃
             </button>
             <div className='navbar-user'>
-              {currentUser.photoURL && (
+              {authUser.photoURL && (
                 <img
-                  src={currentUser.photoURL}
+                  src={authUser.photoURL}
                   alt='프로필'
                   className='navbar-avatar'
                 />
               )}
-              <span>{currentUser.displayName || currentUser.email}</span>
+              <span>{authUser.displayName || authUser.email}</span>
             </div>
           </>
         ) : (

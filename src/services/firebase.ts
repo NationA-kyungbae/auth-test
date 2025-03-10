@@ -19,11 +19,12 @@ const firebaseConfig = {
 };
 
 // Firebase 초기화
-const app =
+export const app =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
+export const auth = getAuth(app);
 
-export { auth, googleProvider };
+export const providers = {
+  google: new GoogleAuthProvider(),
+};
+
+export type FBProviders = keyof typeof providers;

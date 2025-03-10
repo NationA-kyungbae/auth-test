@@ -6,21 +6,24 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useAuthStore, useInitializeAuthListener } from './store/authStore';
+import {
+  useFirebaseAuthStore,
+  useInitializeAuthListener,
+} from './store/useFirebaseAuthStore';
 import { useEffect } from 'react';
 
 function App() {
-  const { currentUser, initialized } = useAuthStore();
+  const { authUser, initialized } = useFirebaseAuthStore();
   useInitializeAuthListener();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (currentUser) {
+    if (authUser) {
       navigate('/');
     } else {
       navigate('/login');
     }
-  }, [currentUser]);
+  }, [authUser]);
 
   if (!initialized) {
     return <div>Loading...</div>;

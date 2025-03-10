@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useFirebaseAuthStore } from '../store/useFirebaseAuthStore';
 
 const Login = () => {
-  const { signInWithGoogle } = useAuthStore();
+  const { signInWithGoogle } = useFirebaseAuthStore();
 
   return (
     <div className='container'>
