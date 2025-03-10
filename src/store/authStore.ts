@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import {
   User,
   signOut as firebaseSignOut,
-  getRedirectResult,
   onAuthStateChanged,
   signInWithPopup,
   signInWithRedirect,
@@ -64,14 +63,14 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
       } else {
         await signInWithRedirect(auth, providers[provider]);
-        const user = await getRedirectResult(auth);
-        if (user?.user) {
-          const providerData = user.user.providerData[0];
-          if (providerData && providerData.email && !user.user.email) {
-            console.log('providerData', providerData);
-            await updateEmail(user.user, providerData.email);
-          }
-        }
+        // const user = await getRedirectResult(auth);
+        // if (user?.user) {
+        //   const providerData = user.user.providerData[0];
+        //   if (providerData && providerData.email && !user.user.email) {
+        //     console.log('providerData', providerData);
+        //     await updateEmail(user.user, providerData.email);
+        //   }
+        // }
       }
 
       console.log({ env: env, status: 'success' });
