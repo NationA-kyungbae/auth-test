@@ -58,12 +58,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             const providerData = user.providerData[0];
             // providerData에서 이메일을 가져와 사용자 이메일 업데이트
             if (providerData && providerData.email && !user.email) {
-              try {
-                updateEmail(user, providerData.email);
-                console.log('Email updated successfully');
-              } catch (updateError) {
-                console.error('Error updating email:', updateError);
-              }
+              await updateEmail(user, providerData.email);
             }
           }
         }
@@ -73,10 +68,13 @@ export const useAuthStore = create<AuthState>((set) => ({
         if (user?.user) {
           const providerData = user.user.providerData[0];
           if (providerData && providerData.email && !user.user.email) {
+            console.log('providerData', providerData);
             await updateEmail(user.user, providerData.email);
           }
         }
       }
+
+      console.log({ env: env, status: 'success' });
     } catch (error) {
       console.error('Google 로그인 에러:', error);
     } finally {
